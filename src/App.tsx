@@ -28,6 +28,7 @@ function App() {
 
     const handleAddTodo = () => {
       setTodos((prev) => [...prev, {id: uuidv4(), value: todo, done: false}])
+      setTodo("")
     }
 
     const handleRemoveTodo = (id: string): void => {
