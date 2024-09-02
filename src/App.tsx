@@ -69,11 +69,11 @@ function App() {
                     </div>
                     {
                       todos.map((todo) => (
-                        <div key={todo.id} className={`grid grid-cols-12 gap-2 w-full ${todo.done? "bg-green-400 rounded" :"" }`}>
-                          <div className={`todo col-span-11 px-3 py-2 overflow-auto cursor-pointer ${todo.done? "line-through": ""}`} onClick={() => handleDone(todo.id)}>
+                        <div key={todo.id} className={`flex gap-2 w-full ${todo.done? "bg-green-400 rounded" :"" }`}>
+                          <div className={`todo flex-1 px-3 py-2 overflow-auto cursor-pointer ${todo.done? "line-through": ""}`} onClick={() => handleDone(todo.id)}>
                             {todo.value}
                           </div>
-                          <div className="remove col-span-1 m-auto">
+                          <div className="remove m-auto">
                             <button
                               type="button"
                               aria-label="Remove todo"
