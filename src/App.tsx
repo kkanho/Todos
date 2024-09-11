@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { v4 as uuidv4 } from 'uuid'
 
 type Todo = {
@@ -10,7 +10,7 @@ type Todo = {
 }
 
 function App() {
-    const [todo, setTodo] = useState<Todo["value"]>("")
+    const todoInputRef = useRef<HTMLInputElement>(null)
     const [todos, setTodos] = useState<Todo[]>([])
     const [isInitialLoad, setIsInitialLoad] = useState(true)
 
@@ -29,18 +29,19 @@ function App() {
     }, [todos, isInitialLoad])
 
     const handleAddTodo = () => {
+      if (todoInputRef.current == null || todoInputRef.current.value == "") return
       const timestamp = +new Date()
 
       const newTodo = {
         id: uuidv4(),
-        value: todo,
+        value: todoInputRef.current.value,
         done: false,
         start_time: timestamp,
         finish_time: undefined
       }
 
       setTodos((prev) => [newTodo, ...prev])
-      setTodo("")
+      todoInputRef.current.value = ""
     }
 
     const handleRemoveTodo = (id: string): void => {
@@ -69,8 +70,7 @@ function App() {
                         <input
                             type="text"
                             className="flex h-10 w-full rounded-md border bg-inherit px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                            value={todo}
-                            onChange={e => setTodo(e.target.value)}
+                            ref={todoInputRef}
                             placeholder="Add a todo"
                         />
                         <button
