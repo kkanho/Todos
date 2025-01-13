@@ -190,18 +190,16 @@ function App() {
                 <div className="flex flex-col h-full">
                     <div className="flex gap-2 mt-4">
                         {
-                          tab === "todos" || tab === "routine"?
-                            <input
-                              type="text"
-                              className="flex h-10 w-full rounded-md border bg-inherit px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                              ref={todoInputRef}
-                              placeholder={
-                                tab === "todos"? "Add a todo" 
-                                : tab === "routine"? "Add a routine"
-                                : ""
-                              }
-                            />
-                          : <></>
+                          <input
+                            type="text"
+                            className={`flex h-10 w-full rounded-md border bg-inherit px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${tab === "archive"? "hidden" : ""}`}
+                            ref={todoInputRef}
+                            placeholder={
+                              tab === "todos"? "Add a todo" 
+                              : tab === "routine"? "Add a routine"
+                              : ""
+                            }
+                          />
                         }
                         {
                           tab === "todos"? 
