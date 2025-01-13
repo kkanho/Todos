@@ -43,38 +43,6 @@ function App() {
           setTodos(migrateOldVersion(parsedTodos as OldTodo[]))
       }      
 
-      const sampleTodos: Todo[] = [
-        {
-          id: uuidv4(),
-          value: "Daily routine task",
-          done: false,
-          created_time: +new Date(),
-          finish_time: undefined,
-          archive: false,
-          routine: "daily",
-        },
-        {
-          id: uuidv4(),
-          value: "Weekly routine task",
-          done: false,
-          created_time: +new Date(),
-          finish_time: undefined,
-          archive: false,
-          routine: "weekly",
-        },
-        {
-          id: uuidv4(),
-          value: "Monthly routine task",
-          done: false,
-          created_time: +new Date(),
-          finish_time: undefined,
-          archive: false,
-          routine: "monthly",
-        },
-      ];
-
-      setTodos(sampleTodos);
-
       setIsInitialLoad(false)
     }, [])
 
