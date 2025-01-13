@@ -80,12 +80,16 @@ function App() {
 
     // Handle Archive
     // Update the todos for every 1mins. 
-    // If not routine and done and finished in an hour ago or
-    // If not routine and not done and is 6 days from the created time, put to archive
     useEffect(() => {
       const interval = setInterval(() => {
         const anHourAgo = +new Date() - 1000 * 60 * 60 /3
+        const oneDayAgo = +new Date() - 1000 * 60 * 60 * 24
+        const weekAgo = +new Date() - 1000 * 60 * 60 * 24 * 7
+        const monthAgo = +new Date() - 1000 * 60 * 60 * 24 * 30
         const sixDaysAgo = +new Date() - 1000 * 60 * 60 * 24 * 6
+
+        // If not routine and done and finished in an hour ago or
+        // If not routine and not done and is 6 days from the created time, put to archive
         setTodos((prevTodos) =>
           prevTodos.map((todo) =>
             (!todo.routine && todo.done && todo.finish_time && todo.finish_time < anHourAgo) ||
@@ -93,6 +97,21 @@ function App() {
             ? { ...todo, archive: true } : todo
           )
         )
+        
+        setTodos((prevTodos) => // update created_time accordingly
+          prevTodos.map((todo) => {
+            if (todo.routine === "daily" && todo.created_time < oneDayAgo) {
+              return { ...todo, created_time: +new Date() }
+            } else if (todo.routine === "weekly" && todo.created_time < weekAgo) {
+              return { ...todo, created_time: +new Date() }
+            } else if (todo.routine === "monthly" && todo.created_time < monthAgo) {
+              return { ...todo, created_time: +new Date() }
+            } else {
+              return todo
+            }
+          })
+        )
+
       }, 1000 * 60) // 1 mins
 
       return () => clearInterval(interval)
