@@ -1,3 +1,4 @@
+import { formatDistanceToNow } from "date-fns";
 import { useEffect, useRef, useState } from "react";
 import { v4 as uuidv4 } from 'uuid'
 import { Drawer } from 'vaul';
@@ -12,14 +13,6 @@ type Todo = {
   routine?: "daily" | "weekly" | "monthly"
 }
 
-type OldTodo = {
-  id: string
-  value: string
-  done: boolean
-  start_time: number
-  finish_time?: number
-}
-
 type Tabs = "todos" | "routine" | "archive"
 
 function App() {
@@ -32,43 +25,11 @@ function App() {
     useEffect(() => {
       const stored = localStorage.getItem('Todos')
       if (stored) {
-        // Migrate old version, if there is no created_time and with start_time, it is an old version
-        const parsedTodos: (Todo | OldTodo)[] = JSON.parse(stored);
-
-        // If there is no created_time and with start_time, it is an old version
-        const isOldVersion = parsedTodos.some((todo) => (todo as OldTodo).start_time)
-        if (!isOldVersion)
-          setTodos(JSON.parse(stored))
-        else
-          setTodos(migrateOldVersion(parsedTodos as OldTodo[]))
+        setTodos(JSON.parse(stored))
       }      
 
       setIsInitialLoad(false)
     }, [])
-
-    // A function that migrate the old version
-    const migrateOldVersion = (todos: OldTodo[]): Todo[] => {
-      // {"id":"772f57e5-25a4-40ce-b6b7-758f0ff4ae40","value":"finish the whole example pipeline","done":false,"start_time":1735494938314,"finish_time":1736669274291}
-      return todos.map((todo) => {
-        if (todo.finish_time) {
-          return {
-            id: todo.id,
-            value: todo.value,
-            done: todo.done,
-            created_time: todo.start_time,
-            finish_time: todo.finish_time,
-          }
-        } else {
-          return {
-            id: todo.id,
-            value: todo.value,
-            done: todo.done,
-            created_time: todo.start_time,
-            finish_time: undefined,
-          }
-        }
-      })
-    }
 
     // Save to localStorage when todos change
     useEffect(() => {
@@ -82,30 +43,31 @@ function App() {
     // Update the todos for every 1mins. 
     useEffect(() => {
       const interval = setInterval(() => {
-        const anHourAgo = +new Date() - 1000 * 60 * 60 /3
-        const oneDayAgo = +new Date() - 1000 * 60 * 60 * 24
-        const weekAgo = +new Date() - 1000 * 60 * 60 * 24 * 7
-        const monthAgo = +new Date() - 1000 * 60 * 60 * 24 * 30
-        const sixDaysAgo = +new Date() - 1000 * 60 * 60 * 24 * 6
+        const anHourAgo = +new Date() - 1000 * 60 * 60 // 1 hour
+        const oneDayAgo = +new Date() - 1000 * 60 * 60 * 24 // 1 day
+        const weekAgo = +new Date() - 1000 * 60 * 60 * 24 * 7 // 1 week
+        const monthAgo = +new Date() - 1000 * 60 * 60 * 24 * 30 // 1 month
 
         // If not routine and done and finished in an hour ago or
-        // If not routine and not done and is 6 days from the created time, put to archive
+        // If not routine and not done and is 7 days from the created time, put to archive
         setTodos((prevTodos) =>
           prevTodos.map((todo) =>
             (!todo.routine && todo.done && todo.finish_time && todo.finish_time < anHourAgo) ||
-            (!todo.routine && !todo.done && todo.created_time < sixDaysAgo)
-            ? { ...todo, archive: true } : todo
+            (!todo.routine && !todo.done && todo.created_time < weekAgo) ? 
+              { ...todo, archive: true } // archive
+            : todo
           )
         )
         
+        // For routine, if the created_time is more than 1 day for daily, 7 days for weekly, and 30 days for monthly, update the created_time to now
         setTodos((prevTodos) => // update created_time accordingly
           prevTodos.map((todo) => {
             if (todo.routine === "daily" && todo.created_time < oneDayAgo) {
-              return { ...todo, created_time: +new Date() }
+              return { ...todo, created_time: +new Date(), done: false }
             } else if (todo.routine === "weekly" && todo.created_time < weekAgo) {
-              return { ...todo, created_time: +new Date() }
+              return { ...todo, created_time: +new Date(), done: false }
             } else if (todo.routine === "monthly" && todo.created_time < monthAgo) {
-              return { ...todo, created_time: +new Date() }
+              return { ...todo, created_time: +new Date(), done: false }
             } else {
               return todo
             }
@@ -116,6 +78,7 @@ function App() {
 
       return () => clearInterval(interval)
     }, [])
+    
 
     const handleAddTodo = (): void => {
       if (todoInputRef.current == null || todoInputRef.current.value == "") return
@@ -162,7 +125,9 @@ function App() {
 
       setTodos((prev) => (
         prev.map((todo) =>
-          todo.id === id ? { ...todo, done: !todo.done, finish_time: timestamp } : todo
+          todo.id === id ? 
+            { ...todo, done: !todo.done, finish_time: todo.done? undefined: timestamp } 
+          : todo
         )
       ))
     }
@@ -186,7 +151,15 @@ function App() {
         <div key={todo.id} className={`flex gap-2 w-full mt-4 rounded ${todo.done? "bg-green-400" :
           (+new Date() - todo.created_time > daysToMilliseconds(3))? "bg-red-400":
           (+new Date() - todo.created_time > daysToMilliseconds(2))? "bg-yellow-400": "" }`}>
-          <div className={`todo flex-1 px-3 py-2 overflow-auto cursor-pointer ${todo.done? "line-through": ""}`} onClick={() => handleDone(todo.id)}>
+          <div 
+            className={`todo flex-1 px-3 py-2 overflow-auto cursor-pointer ${todo.done? "line-through": ""}`} 
+            onClick={() => handleDone(todo.id)}
+            title={
+              todo.finish_time ? 
+                `Finished at ${new Date(todo.finish_time).toLocaleString()}`
+              : `Created at ${formatDistanceToNow(todo.created_time)}`
+            }
+          >
             {todo.value}
           </div>
           <div className="remove m-auto">
