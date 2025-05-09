@@ -134,7 +134,7 @@ function App() {
         <div className="h-[100dvh] flex flex-col">
             <a 
               href="https://github.com/kkanho/Todos" 
-              className={`${buttonVariants({ variant: "outline", size: "icon" })} absolute top-2 right-2 hover:bg-slate-100`}
+              className={`${buttonVariants({ variant: "outline", size: "icon" })} absolute top-2 right-2 hover:bg-slate-100 hidden sm:block`}
               title="^_^"
               target="_blank"
             >
